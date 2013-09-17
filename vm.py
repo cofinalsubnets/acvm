@@ -7,7 +7,7 @@ class StackFrame():
     self.parent = parent
 
 class Closure():
-  def __init__(self, bindings=(), parent=None):
+  def __init__(self, bindings=[], parent=None):
     self.bindings, self.parent = bindings, parent
 
   def lexaddr(self, n, i):

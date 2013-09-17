@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 import unittest
 import vm
-import assembler
-import loader
+import asm
+import ld
 import ops
 import io
 
 class LoaderTests(unittest.TestCase):
   def test_split_inst(self):
     inst = (41<<26) + (9<<21) + (13<<16) + 2
-    opc, a, b, c = loader.split_inst(inst)
+    opc, a, b, c = ld.split_inst(inst)
     self.assertEqual(opc, 41)
     self.assertEqual(a,    9)
     self.assertEqual(b,   13)
@@ -17,27 +17,27 @@ class LoaderTests(unittest.TestCase):
 
   def test_load_compiled(self):
     op, args = ops.by_name['gvecl'], (1,2,3)
-    bstr = io.BytesIO(assembler.asm_basic_inst(op, args))
-    ((f,args),) = loader.load(ops.by_code, bstr)
+    bstr = io.BytesIO(asm.asm_basic_inst(op, args))
+    ((f,args),) = ld.load(ops.by_code, bstr)
     self.assertIs(f, op)
     self.assertSequenceEqual(args, args)
 
 class AssemblerTests(unittest.TestCase):
   def test_sum_inst(self):
     expected = (10<<26) + (1<<21) + (2<<16) + 3
-    self.assertEqual(assembler.sum_inst(10, 1, 2, 3), expected)
+    self.assertEqual(asm.sum_inst(10, 1, 2, 3), expected)
 
   def test_asm_inst(self):
     op, args = ops.by_name['gvecl'], (1,2,3)
     expected_val   = 0b00101000001000100000000000000011
     expected_bytes = expected_val.to_bytes(4, 'big') 
-    self.assertEqual(assembler.asm_basic_inst(op, args), expected_bytes)
+    self.assertEqual(asm.asm_basic_inst(op, args), expected_bytes)
 
 class AsmTest(unittest.TestCase):
   def assemble(self, src):
     infile, outfile = io.StringIO(src), io.BytesIO()
-    assembler.assemble(ops.by_name, infile, outfile)
-    return list(loader.load(ops.by_code, io.BytesIO(outfile.getvalue())))
+    asm.assemble(ops.by_name, infile, outfile)
+    return list(ld.load(ops.by_code, io.BytesIO(outfile.getvalue())))
 
   def assertAssemblesTo(self, wasm, expected):
     self.assertSequenceEqual(self.assemble(wasm), expected)

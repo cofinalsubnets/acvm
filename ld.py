@@ -1,14 +1,6 @@
 import io
 
-len_inst = 32
-ibits = (
-#  bits | offset
-  (   6,      26),
-  (   5,      21),
-  (   5,      16),
-  (  16,       0)
-)
-
+len_inst = 32 # inst length in bits
 lit_types = {
   # typeflag -> typing fn
   0 : lambda ops, bs: int.from_bytes(bs, 'big', signed=True), # int
@@ -43,8 +35,10 @@ def bitmask(nbits, offset):
 def bitselect(nbits, offset, n):
   return (n & bitmask(nbits, offset)) >> offset
 
-def getpart(p,i):
-  return bitselect(ibits[p][0], ibits[p][1], i)
+def getpart(p, i):
+  bitlens = (6,  5,  5,  16)
+  offsets = (26, 21, 16, 0 )
+  return bitselect(bitlens[p], offsets[p], i)
 
 def split_inst(i):
   return [getpart(p,i) for p in range(4)]
